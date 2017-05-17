@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using UniRx;
 
@@ -8,7 +9,7 @@ public class MessageTest : MonoBehaviour {
     Subject<string> subject = new Subject<string>();
 
 	void Start () {
-        operatorTest();
+        test5();
 	}
 
     private void test1(){
@@ -52,6 +53,7 @@ public class MessageTest : MonoBehaviour {
         subject.OnCompleted();
     }
 
+    // オペレーターテスト
     private void operatorTest(){
         subject
             .Where(x => x == "Enemy") // 条件式に合う物を通す
@@ -59,5 +61,50 @@ public class MessageTest : MonoBehaviour {
 
         subject.OnNext("Enemy");
         subject.OnNext("Wall");
+    }
+
+    // イベントタイミングを通知するメッセージテスト
+    private void test3(){
+        var subjectUnit = new Subject<Unit>();
+
+        subjectUnit
+            .Subscribe(x => Debug.Log(x));
+
+        subjectUnit.OnNext(Unit.Default);
+    }
+
+    // OnErrorの動作テスト
+    // エラーに入った場合はその後の処理は行われない
+    private void test4(){
+        subject
+            .Select(str => int.Parse(str))
+            .Subscribe(
+                x => Debug.Log("成功:" + x), 
+                ex => Debug.Log("例外発生:" + ex)
+            );
+
+        subject.OnNext("1");
+        subject.OnNext("2");
+        subject.OnNext("AAAA");
+        subject.OnNext("4");
+        subject.OnCompleted();
+    }
+
+    // OnError発生後も再購読する処理
+    // エラーが発生するとErrorRetryでストリームを再構築して続きを購読する
+    private void test5(){
+        subject
+            .Select(str => int.Parse(str))
+            .OnErrorRetry((FormatException ex) => { 
+                Debug.Log("例外発生、再購読します");
+            })
+            .Subscribe(x => Debug.Log("成功:" + x), ex => Debug.Log("例外発生:" + ex));
+
+        subject.OnNext("1");
+        subject.OnNext("2");
+        subject.OnNext("AAAA");
+        subject.OnNext("4");
+        subject.OnNext("5");
+        subject.OnCompleted();
     }
 }
