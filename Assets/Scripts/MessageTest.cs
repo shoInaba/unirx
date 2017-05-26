@@ -9,7 +9,7 @@ public class MessageTest : MonoBehaviour {
     Subject<string> subject = new Subject<string>();
 
 	void Start () {
-        test5();
+        test7();
 	}
 
     private void test1(){
@@ -106,5 +106,37 @@ public class MessageTest : MonoBehaviour {
         subject.OnNext("4");
         subject.OnNext("5");
         subject.OnCompleted();
+    }
+
+    // Disposeテスト
+    private void test6(){
+        var subject6 = new Subject<int>();
+
+        var disposable = subject6
+            .Subscribe(x => Debug.Log(x), () => Debug.Log("OnCompleted"));
+
+        subject6.OnNext(1);
+        subject6.OnNext(2);
+        disposable.Dispose();
+
+        subject6.OnNext(3);
+        subject.OnCompleted();
+
+    }
+
+    // 指定のSubscribeだけ停止する
+    private void test7(){
+        var subject7 = new Subject<int>();
+
+        var disposable1 = subject7.Subscribe(x => Debug.Log("ストリーム1:" + x), () => Debug.Log(" OnCompleted"));
+        var disposable2 = subject7.Subscribe(x => Debug.Log("ストリーム2:" + x), () => Debug.Log(" OnCompleted"));
+
+        subject7.OnNext(1);
+        subject7.OnNext(2);
+
+        disposable1.Dispose();
+
+        subject7.OnNext(3);
+        subject7.OnCompleted();
     }
 }
