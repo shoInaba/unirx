@@ -3,9 +3,9 @@ using System.Collections;
 using UniRx;
 
 public class TimeCounter : MonoBehaviour {
-
-    // イベントを発行する核となるインスタンス
-    private Subject<int> timerSubject = new Subject<int>();
+    
+    [SerializeField] private int timeLife = 3; // タイマー
+    private Subject<int> timerSubject = new Subject<int>(); // イベントを発行する核となるインスタンス
 
     // イベントの購読側のみ公開
     public IObservable<int> OnTimeChanged { 
@@ -16,6 +16,9 @@ public class TimeCounter : MonoBehaviour {
 
     void Start(){
         StartCoroutine(TimerCoroutine());
+
+        timerSubject
+            .Subscribe(x => Debug.Log(x));
     }
 
     //*************************************************************************************************
@@ -24,15 +27,14 @@ public class TimeCounter : MonoBehaviour {
     /// </summary>
     //*************************************************************************************************
     IEnumerator TimerCoroutine(){
-        var time = 100;
-        while(time > 0) {
-            time--;
+        yield return null;
 
-            // イベント発行
-            timerSubject.OnNext(time);
-
-            // 1秒待機
+        var time = timeLife;
+        while(time >= 0) {
+            // イベント発行、1秒待機
+            timerSubject.OnNext(time--);
             yield return new WaitForSeconds(1);
         }
+        timerSubject.OnCompleted();
     }
 }
