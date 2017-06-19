@@ -9,7 +9,7 @@ public class MessageTest : MonoBehaviour {
     Subject<string> subject = new Subject<string>();
 
 	void Start () {
-        test7();
+        test10();
 	}
 
     private void test1(){
@@ -138,5 +138,50 @@ public class MessageTest : MonoBehaviour {
 
         subject7.OnNext(3);
         subject7.OnCompleted();
+    }
+
+    // ReactivePropertyシリーズのテスト
+    private void test8() {
+        var rp = new ReactiveProperty<int>(10); // 初期値を指定出来る
+
+        // 代入や値を読み取れる
+        rp.Value = 20;
+        var currentValue = rp.Value;
+
+        // Subscribeも可能
+        rp.Subscribe(x => Debug.Log(x));
+
+        // 値を書き換えるとOnNextが発行される
+        rp.Value = 30;
+    }
+
+    // インスペクター上で値を変えてもログが出る
+    [SerializeField] private IntReactiveProperty playerHealth = new IntReactiveProperty(100);
+    private void test9(){
+        playerHealth.Subscribe(x => Debug.Log(x));
+    }
+
+    // ReactiveCollection 状態変化を通知する機能が搭載したList<T>
+    private void test10(){
+        var collection = new ReactiveCollection<string>();
+
+        // リストに追加した時に呼ばるイベント登録
+        collection
+            .ObserveAdd()
+            .Subscribe(x => {
+                Debug.Log(string.Format("Add [{0}] = {1}", x.Index, x.Value));
+            });
+
+        // リストから削除された時のイベント登録
+        collection
+            .ObserveRemove()
+            .Subscribe(x => {
+                Debug.Log(string.Format("Remove [{0}] = {1}", x.Index, x.Value));    
+            });
+
+        collection.Add("Apple");
+        collection.Add("Baseball");
+        collection.Add("Cherry");
+        collection.Remove("Apple");
     }
 }

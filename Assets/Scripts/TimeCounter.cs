@@ -17,8 +17,8 @@ public class TimeCounter : MonoBehaviour {
     void Start(){
         StartCoroutine(TimerCoroutine());
 
-        timerSubject
-            .Subscribe(x => Debug.Log(x));
+        //timerSubject
+        //    .Subscribe(x => Debug.Log(x));
     }
 
     //*************************************************************************************************
