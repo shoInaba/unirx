@@ -14,10 +14,7 @@ public class TriggersSample : MonoBehaviour {
         this.FixedUpdateAsObservable()
             .Where(_ => isForceEnabled)
             .Subscribe(_ => rigidBody.AddForce(Vector3.up * 100.0f));
-
-        this.FixedUpdateAsObservable()
-            .Subscribe(_ => Debug.Log("isForceEnabled:" + isForceEnabled));
-        
+		
         // WarpZoneに侵入したらフラグ有効にする
         this.OnTriggerEnterAsObservable()
             .Where(x => x.gameObject.tag == "WarpZone")

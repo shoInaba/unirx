@@ -7,6 +7,12 @@ public class TimerView : MonoBehaviour {
     [SerializeField] private Text counterText; // uGUIテキスト
 
     void Start(){
+		
+		// FPSカウンタ
+		FPSCounter.Current.Subscribe( fps => {
+			Debug.Log(fps);
+		});
+
         // タイマーのカウンタが変化したイベントを受けuGUIText更新
         timeCounter.OnTimeChanged.Subscribe(time => {
             // 現在のタイマー値をUIに表示

@@ -26,7 +26,7 @@ public class TimeCounter : MonoBehaviour {
     /// タイマーカウントのコルーチン
     /// </summary>
     //*************************************************************************************************
-    IEnumerator TimerCoroutine(){
+	IEnumerator TimerCoroutine(){
         yield return null;
 
         var time = timeLife;
