@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using UniRx;
+using UniRx.Triggers;
 
 public class MessageTest : MonoBehaviour {
 
@@ -9,7 +10,7 @@ public class MessageTest : MonoBehaviour {
     Subject<string> subject = new Subject<string>();
 
 	void Start () {
-        test10();
+        test12();
 	}
 
     private void test1(){
@@ -183,5 +184,32 @@ public class MessageTest : MonoBehaviour {
         collection.Add("Baseball");
         collection.Add("Cherry");
         collection.Remove("Apple");
+    }
+
+    // UpdateAsObservableテスト
+    private void test11(){
+        // UpdateAsObservableはComponectに対する拡張メソッドとして定義されるいるので
+        // 呼び出す際はthisが必要
+        // UpdateAsObservableは破棄された際に自動的にOnCompletedが呼ばれる
+        this.UpdateAsObservable()
+            .Subscribe(
+                _ => Debug.Log("Update"),
+                () => Debug.Log("OnCompleted")
+            );
+
+        this.OnDestroyAsObservable()
+            .Subscribe(_ => Debug.Log("Destroy"));
+
+        Destroy(gameObject, 1.0f);
+    }
+
+    // ObservableEveryUpdateを使う
+    private void test12(){
+        // 破棄された場合に自らOnCompletedを発行しない
+        // 寿命管理には気をつける事
+        // メリット: シングルトン上で動作するのでゲーム進行中に存在し続けるストリームを作れる
+        // MainThreadDispatcherが生成されるので消したらダメ！
+        Observable.EveryUpdate()
+            .Subscribe(_ => Debug.Log("Update"));
     }
 }

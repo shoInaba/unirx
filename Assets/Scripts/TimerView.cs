@@ -10,7 +10,7 @@ public class TimerView : MonoBehaviour {
 		
 		// FPSカウンタ
 		FPSCounter.Current.Subscribe( fps => {
-			Debug.Log(fps);
+			// Debug.Log(fps);
 		});
 
         // タイマーのカウンタが変化したイベントを受けuGUIText更新
