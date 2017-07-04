@@ -10,7 +10,7 @@ public class MessageTest : MonoBehaviour {
     Subject<string> subject = new Subject<string>();
 
 	void Start () {
-        test12();
+        test13();
 	}
 
     private void test1(){
@@ -211,5 +211,18 @@ public class MessageTest : MonoBehaviour {
         // MainThreadDispatcherが生成されるので消したらダメ！
         Observable.EveryUpdate()
             .Subscribe(_ => Debug.Log("Update"));
+    }
+
+    // Updateサンプル
+    [SerializeField] float intervalSeconds = 0.25f;
+    private void test13(){
+        this.UpdateAsObservable()
+            .Where(_ => Input.GetKey(KeyCode.Z))
+            .ThrottleFirst(TimeSpan.FromSeconds(intervalSeconds)) // 値が来たら一定時間ストリーム遮断
+            .Subscribe(_ => Attack());
+    }
+
+    private void Attack(){
+        Debug.Log("Attack");
     }
 }
