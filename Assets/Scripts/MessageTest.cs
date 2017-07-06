@@ -10,7 +10,7 @@ public class MessageTest : MonoBehaviour {
     Subject<string> subject = new Subject<string>();
 
 	void Start () {
-        test13();
+        test14();
 	}
 
     private void test1(){
@@ -225,4 +225,35 @@ public class MessageTest : MonoBehaviour {
     private void Attack(){
         Debug.Log("Attack");
     }
+
+    // UniRxとコルーチンサンブル
+    private void test14(){
+        
+        // コルーチン終了タイミングを待つ処理
+        // 1:コルーチン 2:yieldしたタイミングでOnNextするか(bool)
+        // Trueの場合はコルーチン開始時にOnNextも一度走る
+        // falseの場合はコルーチン終了後に一度だけ走る
+
+        // var disposable = 
+        Observable.FromCoroutine(token => test14Coroutine(token), publishEveryYield: false)
+            .Subscribe(
+                _ => Debug.Log("OnNext"),
+                () => Debug.Log("OnComplered")
+            ).AddTo(gameObject);
+
+        // DisposeするとCancellationTokenのトークンがtrueになる
+        // disposable.Dispose();
+    }
+
+    // MEMO: Subscribeする度にコルーチンを生成する
+    //       SubscribeをDisposeするとコルーチンは自動的に停止する
+    private IEnumerator test14Coroutine(CancellationToken token){
+        Debug.Log("Coroutine started.");
+        Debug.LogWarning("CancellationToken:" + token.IsCancellationRequested);
+        yield return new WaitForSeconds(3);
+        Debug.Log("Coroutine finished.");
+    }
+
+
+
 }
