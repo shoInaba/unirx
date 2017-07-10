@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UniRx;
 using UniRx.Triggers;
 
@@ -10,7 +11,7 @@ public class MessageTest : MonoBehaviour {
     Subject<string> subject = new Subject<string>();
 
 	void Start () {
-        test14();
+        test18();
 	}
 
     private void test1(){
@@ -232,7 +233,7 @@ public class MessageTest : MonoBehaviour {
         // コルーチン終了タイミングを待つ処理
         // 1:コルーチン 2:yieldしたタイミングでOnNextするか(bool)
         // Trueの場合はコルーチン開始時にOnNextも一度走る
-        // falseの場合はコルーチン終了後に一度だけ走る
+        // falseの場合はコルーチン終了後にOnCompleredが一度だけ走る
 
         // var disposable = 
         Observable.FromCoroutine(token => test14Coroutine(token), publishEveryYield: false)
@@ -249,11 +250,90 @@ public class MessageTest : MonoBehaviour {
     //       SubscribeをDisposeするとコルーチンは自動的に停止する
     private IEnumerator test14Coroutine(CancellationToken token){
         Debug.Log("Coroutine started.");
-        Debug.LogWarning("CancellationToken:" + token.IsCancellationRequested);
         yield return new WaitForSeconds(3);
         Debug.Log("Coroutine finished.");
     }
 
+    // コルーチンのyield returnの結果を取り出す
+    [SerializeField] private List<Vector2> moveList;
+    private void test15(){
+        // コルーチンから値を取り出してデバッグログに表示
+        Observable.FromCoroutineValue<Vector2>(MovePositionCoroutine)
+            .Subscribe(x => Debug.Log(x));
+    }
 
+    private IEnumerator MovePositionCoroutine(){
+        foreach(var v in moveList) {
+            yield return v;
+        }
+    }
 
+    // コルーチン内部でOnNextを直接発行
+    public bool IsPaused;
+    private void test16(){
+        Observable.FromCoroutine<long>(observer => CountCoroutine(observer))
+            .Subscribe(x => Debug.Log(x)) // OnNext処理
+            .AddTo(gameObject);
+    }
+
+    /// <param name="observer"> 通知用IObserver </param>
+    private IEnumerator CountCoroutine(IObserver<long> observer) {
+        long current = 0;
+        float deltaTime = 0;
+
+        while(true) {
+            if(!IsPaused){
+                deltaTime += Time.deltaTime;
+                // 差分が1秒超えたら整数部を取り出して集計して通知
+                if(deltaTime >= 1.0f){
+                    var integerPart = (int)Mathf.Floor(deltaTime);
+                    current += integerPart;
+                    deltaTime -= integerPart;
+
+                    // 経過秒数通知
+                    observer.OnNext(current);
+                }
+            }
+            yield return null;
+        }
+    }
+
+    // 低コストで軽量なコルーチン "マイクロコルーチン"
+    // yield return null しか使えないが高速である
+    private void test17(){
+        Observable.FromMicroCoroutine<long>(observer => CountCoroutine(observer))
+            .Subscribe(x => Debug.Log(x))
+            .AddTo(gameObject);
+    }
+
+    // HotとCold
+    private void test18(){
+        var subject = new Subject<string>();
+
+        // subjectから生成されたObservableは " HOT "
+        var sourceObservable = subject.AsObservable();
+
+        // Scan()は " Cold "
+        var stringObservable = sourceObservable.Scan((p, c) => p + c);
+
+        // 上記コメントアウトを " HOT "にした場合の処理
+        var stringObservable = sourceObservable
+            .Scan((p, c) => p + c)
+            .Publish(); // Hot変換オペレータ
+
+        stringObservable.Connect(); // ストリーム稼働開始
+
+        // ストリームに値を渡す
+        subject.OnNext("A");
+        subject.OnNext("B");
+
+        // ストリームに値を流した後にSubscribe
+        stringObservable.Subscribe(x => Debug.Log(x)); //(Console.WriteLine);
+
+        // Subscribe後にストリームに値を流す
+        subject.OnNext("C");
+
+        // 完了
+        subject.OnCompleted();
+    }
 }
