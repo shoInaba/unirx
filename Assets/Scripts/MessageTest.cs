@@ -11,7 +11,7 @@ public class MessageTest : MonoBehaviour {
     Subject<string> subject = new Subject<string>();
 
 	void Start () {
-        test18();
+        test19();
 	}
 
     private void test1(){
@@ -307,6 +307,9 @@ public class MessageTest : MonoBehaviour {
     }
 
     // HotとCold
+    // [Cold] Subscribeされるまで動作しない
+    // [Hot] Subscribe実行前よりストリーム稼働している
+    // Cold ObservableはSubscribeされないと動作しない!
     private void test18(){
         var subject = new Subject<string>();
 
@@ -314,26 +317,52 @@ public class MessageTest : MonoBehaviour {
         var sourceObservable = subject.AsObservable();
 
         // Scan()は " Cold "
-        var stringObservable = sourceObservable.Scan((p, c) => p + c);
-
-        // 上記コメントアウトを " HOT "にした場合の処理
+        // var stringObservable = sourceObservable.Scan((p, c) => p + c);
+        // 上記の処理を " HOT "にした場合の処理
         var stringObservable = sourceObservable
             .Scan((p, c) => p + c)
-            .Publish(); // Hot変換オペレータ
+            .Publish(); // Hot変換オペレータ、これでSubscribeする前にストリームを強制起動できる
 
-        stringObservable.Connect(); // ストリーム稼働開始
+        // ストリーム稼働開始
+        stringObservable.Connect();
 
         // ストリームに値を渡す
         subject.OnNext("A");
         subject.OnNext("B");
 
         // ストリームに値を流した後にSubscribe
-        stringObservable.Subscribe(x => Debug.Log(x)); //(Console.WriteLine);
+        // 
+        stringObservable.Subscribe(x => Debug.Log(x));
 
         // Subscribe後にストリームに値を流す
         subject.OnNext("C");
 
         // 完了
         subject.OnCompleted();
+    }
+
+    // IObservableからコルーチンに変換
+    // Subscribeの代わりにToYieldInstruction()を利用することで
+    // コルーチンとしてストリームを扱えるようになる
+    private void test19(){
+        StartCoroutine(WaitCoroutine());
+    }
+
+    private IEnumerator WaitCoroutine(){
+        // 1秒待機
+        Debug.Log("Wait for 1 second.");
+        yield return Observable.Timer(TimeSpan.FromSeconds(1)).ToYieldInstruction();
+
+        // ToYieldInstruction()はOnCompletedが発行されてコルーチンを終了する
+        // そのためOnCompletedが必ず発行されるストリームでのみ利用できる
+        // 無限に続くストリームの場合はFirstやFirstOrDefaultを使うとよいかも
+        Debug.Log("Press any key");
+        yield return this.UpdateAsObservable()
+            .FirstOrDefault(_ => Input.anyKeyDown) // FirstOrDefaultは条件を満たすとOnNextとOnCompletedを両方発行する
+            .ToYieldInstruction();
+        // ToYieldInstructionはOnCompletedメッセージを受けてyield returnを終了する
+        // つまりOnCompletedしないと永遠に終了しない
+
+        Debug.Log("Pressed.");
     }
 }
