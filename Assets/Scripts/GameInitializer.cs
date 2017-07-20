@@ -21,6 +21,7 @@ public class GameInitializer : MonoBehaviour {
     private IEnumerator GameInitializeCoroutine(){
 
         // 初期化処理を行なう
+
         yield return null;
 
         // 初期化終了処理を通知
