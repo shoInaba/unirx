@@ -16,16 +16,20 @@ public class Title : MonoBehaviour {
         // ボタンタップイベント
         StartButton.OnClickAsObservable()
             .Subscribe(_ => StartCoroutine(Move()));
-        yield return null;
+        
+        yield return StartCoroutine(SceneStack.Open());
+        SceneStack.SetActive(true);
     }
 
     private IEnumerator Move(){
         // falseにすると選択できなくなる
         StartButton.interactable = false;
 
+        // 
+        SceneStack.SetActive(false);
+        yield return StartCoroutine(SceneStack.Close());
+
         // シーン遷移
         SceneStack.MoveScene("InGame");
-
-        yield return null;
     }
 }

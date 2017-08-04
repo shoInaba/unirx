@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI; 
 using UnityEngine.SceneManagement;
 using UniRx;
 
@@ -11,7 +12,10 @@ using UniRx;
 /// </summary>
 //*************************************************************************************************
 public class SceneLoader : MonoBehaviour {
-	void Start () {
+    public Image stop; // 背景
+    public Image rotater; // 読み込みアニメ
+
+    void Start () {
         // 読み込まれてるシーン合計数が返される
         if(SceneManager.sceneCount == 1){
             SceneStack.MoveScene("Title");
@@ -38,7 +42,6 @@ public class SceneLoader : MonoBehaviour {
 
     /// <summary> シーンのアンロード </summary>
     private IEnumerator UnLoadScenes(){
-        Debug.LogWarning("UnLoadScenes 1");
         // SceneLoader 以外をリスト化
         var scenes = Enumerable.Range(0, SceneManager.sceneCount) // シーン数分のインデックス取得
             .Select(i => SceneManager.GetSceneAt(i)) // SceneManager の追加されたシーンのリストから指定したインデックスのシーンを取得
@@ -91,18 +94,22 @@ public class SceneStack {
         Instance.StartCoroutine(Instance.MoveSceneAsync(name));
     }
 
-    /*
-    /// <summary>  </summary>
+    /// <summary> フェードアウト </summary>
     public static IEnumerator Open(){
+        Instance.rotater.gameObject.SetActive(false);
+        yield return Instance.StartCoroutine(Utility.Clock(1.0f, 
+            t => Instance.stop.color = Color.white.WithAlpha(1.0f - t)));
     }
 
-    /// <summary>  </summary>
+    /// <summary> フェードイン </summary>
     public static IEnumerator Close(){
+        yield return Instance.StartCoroutine(Utility.Clock(1.0f, 
+            t => Instance.stop.color = Color.white.WithAlpha(t)));
+        Instance.rotater.gameObject.SetActive(true);
     }
 
-    /// <summary>  </summary>
+    /// <summary> 背景のON・OFF </summary>
     public static void SetActive(bool isActive){
-        
+        Instance.stop.enabled = !isActive;
     }
-    */
 }
