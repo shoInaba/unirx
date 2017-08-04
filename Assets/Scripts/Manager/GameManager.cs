@@ -14,6 +14,8 @@ using UniRx.Triggers;
 //*************************************************************************************************
 public class GameManager : MonoBehaviour {
    
+    UiManager ui;
+
     //*************************************************************************************************
     /// <summary>
     /// 初期化
@@ -21,7 +23,6 @@ public class GameManager : MonoBehaviour {
     //*************************************************************************************************
     IEnumerator Start(){
         yield return StartCoroutine(Build());
-        yield return StartCoroutine(StartGame());
     }
 
     //*************************************************************************************************
@@ -30,9 +31,11 @@ public class GameManager : MonoBehaviour {
     /// </summary>
     //*************************************************************************************************
     IEnumerator Build(){
-        
+        // UIマネージャービルド
+        ui = GameObject.FindObjectOfType<UiManager>();
+        yield return StartCoroutine(ui.Build());
     }
-
+    /*
     //*************************************************************************************************
     /// <summary>
     /// インゲーム開始
@@ -48,4 +51,5 @@ public class GameManager : MonoBehaviour {
     //*************************************************************************************************
     IEnumerator Result(){
     }
+    */
 }

@@ -1,15 +1,20 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System;
+using UnityEngine;
+using UnityEngine.UI;
+using UniRx;
+using UniRx.Triggers;
 
 public class UiManager : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    [Header("Base")]
+    public ImagePosition basePanel;
+    public IObservable<Vector2> baseChanged { get; private set; }
+
+    /// <summary> UIビルド </summary>
+    public IEnumerator Build(){
+        yield return null;
+    }
 }
