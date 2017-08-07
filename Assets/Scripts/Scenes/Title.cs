@@ -13,19 +13,20 @@ public class Title : MonoBehaviour {
     public Button StartButton;
 
     IEnumerator Start(){
-        // ボタンタップイベント
+        // ボタンタップイベント、シーン遷移開始
         StartButton.OnClickAsObservable()
             .Subscribe(_ => StartCoroutine(Move()));
-        
+
+        // フェード
         yield return StartCoroutine(SceneStack.Open());
         SceneStack.SetActive(true);
     }
 
     private IEnumerator Move(){
-        // falseにすると選択できなくなる
+        // ボタンをfalseにすると選択できなく出来る
         StartButton.interactable = false;
 
-        // 
+        // フェード
         SceneStack.SetActive(false);
         yield return StartCoroutine(SceneStack.Close());
 
